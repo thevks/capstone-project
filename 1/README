@@ -29,3 +29,68 @@ python -m pip install torch torchvision scikit-learn scikit-image numpy tqdm pil
 
 (If you want GPU support, install the correct torch wheel from https://pytorch.org.)
 
+---------
+How to adapt this to the paper’s datasets (LIDC-IDRI & CT-GAN)
+
+Dataset loader
+
+Replace SyntheticCTDataset with a Dataset that reads real CT volumes or 2D PNG/JPEG slices. For 3D volumes, either (a) treat 2D slices independently (typical first step), or (b) extend U-Net to 3D (use nn.Conv3d & 3D pooling).
+
+Example: read DICOM/NRRD/PNG slices into grayscale arrays with pydicom or SimpleITK. Then normalize per-scan (windowing for CT Hounsfield Units may be required).
+
+LBP
+
+Keep LBP on 2D slices. For 3D you can compute LBP on each slice or use 3D texture descriptors.
+
+The script uses skimage.feature.local_binary_pattern. For CT data, pick P and R (neighbors and radius) appropriate to image resolution.
+
+U-Net details
+
+The paper uses a U-Net. If you want closer fidelity, use full encoder+decoder with skip connections and optionally pretraining or deeper base channels (32/64/128). For 3D CT, use 3D U-Net.
+
+Feature extraction
+
+In this script, we use the encoder’s global pooled vector as the embedding and simple summary stats of the LBP map (mean/std). The paper likely used more careful concatenation/processing (e.g., flatten or pooled LBP histograms). You can:
+
+Compute histogram of LBP patterns and concatenate to embedding.
+
+Or concatenate spatial bottleneck features followed by PCA to reduce dims before SVM.
+
+SVM training
+
+Use class_weight='balanced' if classes are imbalanced. Tune kernel (RBF, linear) and C using cross-validation. The paper used an SVM — hyperparams matter.
+
+Evaluation metrics
+
+Report accuracy, precision, recall, F1, and AUC. For medical applications, pay special attention to recall for manipulated images (sensitivity).
+
+Practical tips
+
+Use data augmentation (rotations, flips, small elastic transforms) carefully — avoid changing clinical features that GANs might manipulate.
+
+If using GAN-generated images for training/fine-tuning, ensure variety in GAN types (StyleGAN variants, CT-GANs, etc.) to improve generalization.
+
+For deployment, consider per-patient aggregation (i.e., majority vote across slices) to reduce false positives/negatives.
+
+---------
+Notes about reproducibility & ethics
+
+When using clinical datasets (LIDC-IDRI or institutional CTs), ensure IRB / data access approvals and patient privacy protection. Do not share identifiable patient data.
+
+The supplied synthetic dataset is only for functional validation of the pipeline. Use robust cross-validation and external test sets to estimate real-world performance.
+
+If you want next
+
+I can:
+
+Convert the current script to a full 3D U-Net (if you have volumetric CT files).
+
+Provide a ready Dataset class for LIDC-IDRI (DICOM handling & HU windowing).
+
+Add PCA, t-SNE visualization of embeddings and an evaluation notebook.
+
+Provide a Colab-ready notebook and smaller demo dataset so you can run on GPU quickly.
+
+Tell me which of the above you want and I’ll produce it (code + step-by-step instructions).
+
+
