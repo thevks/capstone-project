@@ -139,3 +139,16 @@ drive.mount('/content/drive')
 
 Upload lidc_dataset.py and unet3d.py to the Colab session (or push them into your Drive and add to sys.path).
 '''
+
+'''
+4) PCA / t-SNE / UMAP visualization & analysis code
+
+Use in Colab or locally; code snippet (already in train_colab.py) does PCA/t-SNE. For larger embeddings use UMAP for speed:
+
+# UMAP visualization (optional, faster than TSNE)
+import umap
+um = umap.UMAP(n_components=2, n_neighbors=15, min_dist=0.1)
+proj = um.fit_transform(X_embeddings)
+plt.scatter(proj[:,0], proj[:,1], c=y_labels, cmap='tab10', s=6)
+plt.title("UMAP projection of embeddings")
+'''
