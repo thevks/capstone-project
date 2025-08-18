@@ -1,9 +1,21 @@
-Nice — I’ll give you a complete, working implementation you can run locally that follows the paper’s pipeline: LBP preprocessing → U-Net feature extractor → SVM classifier.
-The code is ready to plug into real datasets (e.g., LIDC-IDRI and your GAN-generated CTs), and also includes a small synthetic-data example so you can sanity-check the pipeline right away.
+Approch based on paper
+--------------------------
+[1] A. S and S. Narayan,
+"Detection of GAN-manipulated Medical Images through Deep LearningTechniques,
+" 2024 International Conference on Advances in Modern Age Technologies for Health and Engineering Science (AMATHE), Shivamogga, India, 2024, pp.1-6, doi: 10.1109/AMATHE61652.2024.10582065.
+
+
+Nice — I’ll give you a complete, working implementation you can run locally that follows the paper’s pipeline: 
+
+LBP preprocessing → U-Net feature extractor → SVM classifier.
+
+The code is ready to plug into real datasets (e.g., LIDC-IDRI and your GAN-generated CTs), and also includes a small synthetic-data example 
+so you can sanity-check the pipeline right away.
 
 I’ll provide:
 
-A single Python script (PyTorch + scikit-learn) with everything: data handling, LBP, U-Net, training loop, feature extraction, SVM training, evaluation, and save/load.
+A single Python script (PyTorch + scikit-learn) with everything: data handling, LBP, U-Net, training loop, feature extraction, SVM training, 
+evaluation, and save/load.
 
 Instructions for dependencies and how to adapt to real datasets.
 
@@ -11,7 +23,7 @@ Notes & tips for reproducing results close to the paper.
 
 
 What this implements
-----------
+--------------------
 
 LBP (Local Binary Patterns) preprocessing (using skimage) to extract texture maps from input images.
 
@@ -21,7 +33,7 @@ A pipeline that concatenates LBP features + U-Net embeddings, then trains an SVM
 
 Save/restore model & a small synthetic dataset trainer for immediate testing.
 
-----
+-------
 Install these (tested on Linux/macOS/Windows; Python 3.9+ recommended):
 
 python -m pip install torch torchvision scikit-learn scikit-image numpy tqdm pillow
