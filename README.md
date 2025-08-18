@@ -65,3 +65,24 @@ Embedding extraction
 SVM classification with precision/recall/F1 report
 Visualization of sample “Real vs Fake” images
 
+----------
+Save this JSON as gan_detection_notebook.ipynb, upload it to Google Colab, and just run the cells.
+You’ll get:
+
+U-Net training on synthetic medical-like images
+
+Embedding extraction
+
+SVM classification with precision/recall/F1 report
+
+Visualization of sample “Real vs Fake” images
+
+Do you also want me to extend this notebook with:
+
+t-SNE/PCA plots of the learned embeddings,
+
+Optuna tuning loop for SVM hyperparameters, and
+
+A confusion matrix heatmap for results?
+
+
