@@ -13,3 +13,39 @@ Short instructions (how to run in Colab, how to adapt to your GAN CTs, tips on h
 I did not ask any clarifying questions and assumed you have basic familiarity with LIDC (DICOM folders per study) and can place the data into a folder or Google Drive.
 
 
+
+5) How to adapt to GAN-manipulated CT images (the paper’s setup)
+
+Data organization
+--------
+Put real CT series under drive/MyDrive/LIDC_real/<study_id>/ and GAN-manipulated series under drive/MyDrive/LIDC_fake/<study_id>/. Modify LIDCSliceDataset or create a wrapper that returns (volume, label) where label is 0=real,1=fake.
+
+LBP integration
+--------
+For 2D pipeline: compute lbp_map = local_binary_pattern(slice_img, P=8, R=1, method='uniform') and either:
+
+feed LBP as a second channel to 2D U-Net (concat -> in_channels=2), or
+
+pool LBP statistics (histogram, mean/std) and concatenate to embedding before SVM.
+
+Training strategy
+--------
+
+Two-stage (paper’s style):
+
+Stage A: train U-Net encoder (supervised proxy or segmentation if labels exist; else contrastive/proxy task).
+
+Stage B: extract embeddings on train set, append LBP features, train SVM (grid-search C and kernel).
+
+Use class_weight='balanced' or oversample if classes are imbalanced.
+
+Evaluation
+----
+
+Report sensitivity (recall) on manipulated images, precision, F1, AUC. In medical domain, prioritize recall of manipulated (positive) class.
+
+Volume-level aggregation
+
+Many papers aggregate per-slice predictions to per-volume: e.g., majority vote, average predicted probability across slices, or train a second-level classifier on per-slice logits.
+
+
