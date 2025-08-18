@@ -49,3 +49,18 @@ Volume-level aggregation
 Many papers aggregate per-slice predictions to per-volume: e.g., majority vote, average predicted probability across slices, or train a second-level classifier on per-slice logits.
 
 
+
+6) Practical tips, hyperparameters & reproducibility
+----------------------------------------------------
+
+LBP: P=8, R=1 works for 2D slices around 128–256 resolution. For high-res slices, increase R. Consider using histogram (e.g., 59 bins for uniform) instead of raw LBP map when concatenating with embeddings.
+
+U-Net: base_filters=16 or 32 for proof-of-concept. For production, use 32/64 with mixed precision and GPU.
+
+SVM: start with kernel='rbf', C in [0.1,1,10]. Use stratified cross-validation.
+
+Data augmentation: mild rotations/flips, translations. Avoid augmentations that change clinical signs (e.g., do not warp anatomy heavily).
+
+Metrics: show per-study and per-slice results. For deployment, use per-study aggregation for decisions.
+
+Logging & checkpoints: use tensorboard or wandb.
