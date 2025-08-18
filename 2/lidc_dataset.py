@@ -125,3 +125,14 @@ class LIDCSliceDataset(Dataset):
                 vol3d = self.transform(vol3d)
             return vol3d, {"series_dir": str(spath), "center_slice": z}
 
+
+'''
+Notes:
+
+This dataset reads DICOM series using SimpleITK, converts to HU using RescaleSlope/Intercept, applies windowing, and normalizes to [0,1].
+
+Use mode='2d' (per-slice) to reuse the earlier 2D pipeline (LBP + 2D U-Net). Use mode='3d' to feed small 3D blocks to the 3D U-Net.
+
+If you have PNG/JPEG slice images instead, write a thin wrapper to load them and skip the HU conversion.
+
+'''
