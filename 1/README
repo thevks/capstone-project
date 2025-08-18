@@ -1,0 +1,21 @@
+Nice — I’ll give you a complete, working implementation you can run locally that follows the paper’s pipeline: LBP preprocessing → U-Net feature extractor → SVM classifier.
+The code is ready to plug into real datasets (e.g., LIDC-IDRI and your GAN-generated CTs), and also includes a small synthetic-data example so you can sanity-check the pipeline right away.
+
+I’ll provide:
+
+A single Python script (PyTorch + scikit-learn) with everything: data handling, LBP, U-Net, training loop, feature extraction, SVM training, evaluation, and save/load.
+
+Instructions for dependencies and how to adapt to real datasets.
+
+Notes & tips for reproducing results close to the paper.
+
+What this implements
+
+LBP (Local Binary Patterns) preprocessing (using skimage) to extract texture maps from input images.
+
+A U-Net encoder/decoder (PyTorch) adapted so we can extract a feature vector (from encoder bottleneck or global pooled decoder features).
+
+A pipeline that concatenates LBP features + U-Net embeddings, then trains an SVM (scikit-learn) to classify real vs GAN-manipulated images.
+
+Save/restore model & a small synthetic dataset trainer for immediate testing.
+
