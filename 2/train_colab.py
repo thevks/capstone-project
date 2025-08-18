@@ -122,3 +122,20 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+'''
+Colab notes:
+
+Run a cell at top to install dependencies:
+
+!pip install -q torch torchvision scikit-learn scikit-image SimpleITK pydicom umap-learn
+
+
+Mount Drive:
+
+from google.colab import drive
+drive.mount('/content/drive')
+
+
+Upload lidc_dataset.py and unet3d.py to the Colab session (or push them into your Drive and add to sys.path).
+'''
