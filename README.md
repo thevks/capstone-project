@@ -28,6 +28,10 @@ python optuna_search.py
 4. Open Colab Notebook:
 jupyter notebook gan_detection_notebook.ipynb
 
-
-
+5. Upload the notbook to Google Colab, and just run the cells.
+You’ll get:
+U-Net training on synthetic medical-like images
+Embedding extraction
+SVM classification with precision/recall/F1 report
+Visualization of sample “Real vs Fake” images
 
