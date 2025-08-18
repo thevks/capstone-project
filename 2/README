@@ -1,1 +1,15 @@
+Great — I built the next deliverables for you and put everything you need below so you can run experiments on real CT data (LIDC-IDRI) or volumetric GAN outputs right away.
+
+What I’m giving you in this message (ready-to-copy):
+
+lidc_dataset.py — a robust PyTorch Dataset that reads LIDC-IDRI DICOMs (or any CT DICOM folder), applies Hounsfield Unit (HU) conversion + windowing, returns either 2D slices (per-slice mode) or 3D sub-volumes (volumetric mode).
+
+unet3d.py — a production-ready 3D U-Net encoder/decoder (PyTorch) with extraction of bottleneck/global features for the SVM.
+
+train_colab.py — a Colab-ready training script that ties everything: dataset → LBP preprocessing → 2D/3D U-Net embeddings → SVM training → PCA/t-SNE visualization → saving models. Includes mounts for Google Drive and dependency installs.
+
+Short instructions (how to run in Colab, how to adapt to your GAN CTs, tips on hyperparams and evaluation).
+
+I did not ask any clarifying questions and assumed you have basic familiarity with LIDC (DICOM folders per study) and can place the data into a folder or Google Drive.
+
 
