@@ -96,3 +96,11 @@ if __name__ == "__main__":
     m = UNet3D(in_channels=1, n_classes=2, base_filters=16)
     out, emb = m(x)
     print("out:", out.shape, "emb:", emb.shape)
+
+'''
+Notes:
+
+embedding_pool gives you a fixed-size embedding for any input volume size.
+
+For per-slice 2D experiments you can reuse the 2D UNet (earlier message) or convert this to 2D by replacing Conv3d/MaxPool3d with 2D counterparts.
+'''
