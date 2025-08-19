@@ -1,0 +1,53 @@
+Perfect 👌 — here’s a full PyTorch implementation of the CNN-based End-to-End Forgery Classifier for GAN-manipulated CT scans.
+
+It’s a simpler and faster pipeline than the dual-stream or U-Net+SVM method:
+
+Directly trains a pretrained CNN (EfficientNet/ResNet/DenseNet).
+
+Multi-class classification (TB, TM, FB, FM).
+
+Includes DICOM/PNG loader, augmentations, training loop, evaluation, and Grad-CAM explainability
+
+
+How it works
+-----------
+
+Dataset
+
+Load CT scans (.dcm, .png, .jpg)
+
+Apply augmentation during training (flips, rotations, brightness jitter).
+
+Inference uses only normalization.
+
+Model
+
+Uses EfficientNet-B0 backbone (via timm) with classification head → 4 classes.
+
+You can swap with "resnet50", "densenet121", "efficientnet_b3", etc.
+
+Training
+
+Loss: CrossEntropy.
+
+Optimizer: AdamW.
+
+Early-stops on best validation accuracy.
+
+Evaluation
+
+Prints accuracy, classification report, confusion matrix.
+
+Computes Grad-CAM heatmap for explainability.
+
+✅ Why this is better than the U-Net+SVM paper approach?
+
+End-to-end → no handcrafted LBP.
+
+Transfer learning → faster convergence, higher accuracy.
+
+Simpler pipeline → easier to deploy in real PACS/telemedicine settings.
+
+Explainable via Grad-CAM.
+
+👉 Do you want me to also provide a Keras/TensorFlow 2.x version of this CNN classifier, or will PyTorch be enough for your project?
