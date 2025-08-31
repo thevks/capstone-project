@@ -1,0 +1,53 @@
+def full_pipeline_inference(image_path, efficientnet_model, unet_model):
+    """
+    Executes the full two-stage pipeline on a single CT scan.
+    """
+    # Stage 1: Anomaly Detection & Classification
+    raw_img = load_and_preprocess_image(image_path)
+    fourier_img = apply_fourier_transform(raw_img)
+    
+    # Expand dims for batch inference
+    raw_img_batch = np.expand_dims(raw_img, axis=0)
+    fourier_img_batch = np.expand_dims(fourier_img, axis=0)
+    
+    # Get classification prediction
+    prediction = efficientnet_model.predict([raw_img_batch, fourier_img_batch])
+    predicted_class_idx = np.argmax(prediction, axis=1)[0]
+    
+    class_labels = {0: 'True Malignant', 1: 'True Benign', 2: 'False Malignant', 3: 'False Benign'}
+    predicted_class = class_labels[predicted_class_idx]
+    
+    print(f"Classification result: {predicted_class}")
+    
+    localization_mask = None
+    heatmap = None
+    
+    # Stage 2: Tampering Localization (only for False Cases)
+    if predicted_class in ['False Malignant', 'False Benign']:
+        localization_mask = unet_model.predict(raw_img_batch)[0]
+        
+        # Post-processing to generate a heatmap
+        localization_mask_normalized = (localization_mask - localization_mask.min()) / (localization_mask.max() - localization_mask.min())
+        localization_mask_normalized = (localization_mask_normalized * 255).astype(np.uint8)
+        heatmap = cv2.applyColorMap(localization_mask_normalized, cv2.COLORMAP_JET)
+        
+        # Overlay heatmap on the original image
+        raw_img_display = (raw_img * 255).astype(np.uint8)
+        raw_img_display = cv2.cvtColor(raw_img_display, cv2.COLOR_GRAY2BGR)
+        
+        # Blending the heatmap and the original image for visualization
+        overlaid_image = cv2.addWeighted(raw_img_display, 0.5, heatmap, 0.5, 0)
+        
+        # Display or save the results
+        # cv2.imshow('Original Image', raw_img_display)
+        # cv2.imshow('Heatmap Overlay', overlaid_image)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+    
+    return predicted_class, localization_mask, heatmap
+
+# NOTE: This is an example. You would need to load your trained models here.
+# For example:
+# efficientnet_model = keras.models.load_model('efficientnet_model.h5')
+# unet_model = keras.models.load_model('unet_model.h5')
+# full_pipeline_inference('path/to/your/ct_scan.dcm', efficientnet_model, unet_model)
