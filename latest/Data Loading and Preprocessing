@@ -1,0 +1,89 @@
+def load_and_preprocess_image(dicom_path, target_size=(512, 512)):
+    """Loads a DICOM image, converts it to a NumPy array, resizes, and normalizes."""
+    dicom_file = pydicom.dcmread(dicom_path)
+    img_array = dicom_file.pixel_array
+    
+    # Normalize the pixel values
+    img_array = img_array.astype(np.float32)
+    img_array = (img_array - np.min(img_array)) / (np.max(img_array) - np.min(img_array))
+    
+    # Resize the image to 512x512
+    img_array = cv2.resize(img_array, target_size)
+    
+    # Add a channel dimension
+    img_array = np.expand_dims(img_array, axis=-1)
+    
+    return img_array
+
+def apply_fourier_transform(image):
+    """Applies a Discrete Fourier Transform (DFT) to the image."""
+    # Convert to a format suitable for DFT
+    dft = cv2.dft(np.float32(image), flags=cv2.DFT_COMPLEX_OUTPUT)
+    
+    # Shift the zero-frequency component to the center
+    dft_shift = np.fft.fftshift(dft)
+    
+    # Compute the magnitude spectrum, which helps capture GAN artifacts
+    magnitude_spectrum = 20 * np.log(cv2.magnitude(dft_shift[:, :, 0], dft_shift[:, :, 1]) + 1e-6)
+    
+    # Normalize the magnitude spectrum for model input
+    magnitude_spectrum = (magnitude_spectrum - np.min(magnitude_spectrum)) / (np.max(magnitude_spectrum) - np.min(magnitude_spectrum))
+    
+    # Add a channel dimension
+    magnitude_spectrum = np.expand_dims(magnitude_spectrum, axis=-1)
+    
+    return magnitude_spectrum
+
+# --- Augmentation Functions ---
+def augment_image(image):
+    """Applies augmentation techniques like rotation, flipping, and noise."""
+    # Rotation (±15°)
+    if np.random.rand() > 0.5:
+        angle = np.random.uniform(-15, 15)
+        M = cv2.getRotationMatrix2D((image.shape[1] / 2, image.shape[0] / 2), angle, 1)
+        image = cv2.warpAffine(image, M, (image.shape[1], image.shape[0]))
+    
+    # Horizontal Flip
+    if np.random.rand() > 0.5:
+        image = cv2.flip(image, 1)
+        
+    # Gaussian Noise
+    if np.random.rand() > 0.5:
+        noise = np.random.normal(0, 0.05, image.shape)
+        image = image + noise
+        image = np.clip(image, 0, 1)
+    
+    return image
+
+# --- Dataset Generation ---
+def data_generator(dicom_paths, labels, batch_size):
+    """
+    A generator to yield batches of images and labels.
+    In a full implementation, this would handle loading, preprocessing,
+    and augmentation for both image and Fourier branches.
+    """
+    num_samples = len(dicom_paths)
+    while True:
+        # Shuffle indices for each epoch
+        indices = np.arange(num_samples)
+        np.random.shuffle(indices)
+        
+        for i in range(0, num_samples, batch_size):
+            batch_indices = indices[i:i + batch_size]
+            batch_dicom_paths = [dicom_paths[j] for j in batch_indices]
+            batch_labels = [labels[j] for j in batch_indices]
+            
+            raw_images = []
+            fourier_images = []
+            for path in batch_dicom_paths:
+                raw_img = load_and_preprocess_image(path)
+                aug_img = augment_image(raw_img)
+                fourier_img = apply_fourier_transform(aug_img)
+                raw_images.append(aug_img)
+                fourier_images.append(fourier_img)
+            
+            raw_images = np.array(raw_images)
+            fourier_images = np.array(fourier_images)
+            batch_labels = np.array(batch_labels)
+            
+            yield ([raw_images, fourier_images], batch_labels)
