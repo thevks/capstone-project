@@ -1,46 +1,54 @@
+from tensorflow.keras.layers import Input, Dense, Dropout, concatenate, GlobalAveragePooling2D, Concatenate
+from tensorflow.keras.models import Model
+from tensorflow.keras.applications import EfficientNetB0
+from tensorflow.keras.optimizers import Adam
+import tensorflow as tf
+
 def build_efficientnet_model(input_shape=(512, 512, 1), num_classes=4):
     """
     Builds a dual-branch EfficientNet model for classification.
-    
-    This model uses two branches, one for raw images and one for Fourier-transformed images,
-    fused with an MLP.
     """
     # --- Raw Image Branch ---
     raw_input = Input(shape=input_shape, name='raw_input')
     # EfficientNet requires 3-channel input, so we replicate the channel
-    raw_input_3ch = layers.Concatenate(axis=-1)([raw_input, raw_input, raw_input])
-    
-    # Load EfficientNet pre-trained on ImageNet or medical imaging (if available)
+    raw_input_3ch = Concatenate(axis=-1, name='raw_input_3ch')([raw_input, raw_input, raw_input])
+
+    # Load EfficientNet pre-trained on ImageNet
+    # Provide a unique name for this instance
     base_model_raw = EfficientNetB0(
         include_top=False,
         weights='imagenet',
         input_tensor=raw_input_3ch,
-        input_shape=(512, 512, 3)
+        input_shape=(512, 512, 3),
+        name='efficientnet_raw'  # <--- ADD THIS LINE
     )
-    base_model_raw.trainable = False  # Freeze for transfer learning initially
+    base_model_raw.trainable = False
     x_raw = base_model_raw.output
-    x_raw = layers.GlobalAveragePooling2D()(x_raw)
+    x_raw = GlobalAveragePooling2D()(x_raw)
     
     # --- Fourier Image Branch ---
     fourier_input = Input(shape=input_shape, name='fourier_input')
     # EfficientNet requires 3-channel input
-    fourier_input_3ch = layers.Concatenate(axis=-1)([fourier_input, fourier_input, fourier_input])
-    
+    fourier_input_3ch = Concatenate(axis=-1, name='fourier_input_3ch')([fourier_input, fourier_input, fourier_input])
+
+    # Load EfficientNet pre-trained on ImageNet
+    # Provide a unique name for this instance
     base_model_fourier = EfficientNetB0(
         include_top=False,
         weights='imagenet',
         input_tensor=fourier_input_3ch,
-        input_shape=(512, 512, 3)
+        input_shape=(512, 512, 3),
+        name='efficientnet_fourier' # <--- ADD THIS LINE
     )
-    base_model_fourier.trainable = False # Freeze for transfer learning initially
+    base_model_fourier.trainable = False
     x_fourier = base_model_fourier.output
-    x_fourier = layers.GlobalAveragePooling2D()(x_fourier)
+    x_fourier = GlobalAveragePooling2D()(x_fourier)
     
     # --- Fusion & Classification Head ---
-    fused_features = layers.concatenate([x_raw, x_fourier])
+    fused_features = concatenate([x_raw, x_fourier], name='fusion_layer')
     
     # MLP classifier for fusion
-    x = Dense(256, activation='relu')(fused_features)
+    x = Dense(256, activation='relu', name='dense_fusion_1')(fused_features)
     x = Dropout(0.5)(x)
     x = Dense(num_classes, activation='softmax', name='classification_output')(x)
     
@@ -49,12 +57,12 @@ def build_efficientnet_model(input_shape=(512, 512, 1), num_classes=4):
     # Compile the model
     model.compile(
         optimizer=Adam(learning_rate=1e-4),
-        loss='categorical_crossentropy', # Multi-class classification loss
+        loss='categorical_crossentropy',
         metrics=['accuracy', tf.keras.metrics.AUC(name='auc_roc')]
     )
     
     return model
 
 # Example usage:
-# efficientnet_model = build_efficientnet_model()
-# efficientnet_model.summary()
+efficientnet_model = build_efficientnet_model()
+efficientnet_model.summary()
